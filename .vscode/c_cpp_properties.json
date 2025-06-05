@@ -1,0 +1,22 @@
+{
+    "configurations": [
+        {
+            "name": "STM8S003",
+            "includePath": [
+                "${workspaceFolder}/**"
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE",
+                "_SDCC_",
+                "STM8S003"
+            ],
+            "compilerPath": "D:\\Applications\\SDCC4.5.2\\bin\\sdcc.exe",
+            "cStandard": "c11",
+            "cppStandard": "gnu++14",
+            "intelliSenseMode": "windows-gcc-x64"
+        }
+    ],
+    "version": 4
+}
