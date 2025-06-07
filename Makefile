@@ -3,35 +3,43 @@ include lib/STM8S_StdPeriph_Driver/Makefile
 include src/Makefile
 ######################################
 # C defines
-C_DEFS += -D STM8S003
-C_INCLUDES += 
-C_SOURCES += 
-OUT_DIR = output
+C_DEFS+=-D STM8S003
+C_INCLUDES+= 
+C_SOURCES+= 
+OUT_DIR=output
+TARGET=target
 ######################################
-C_FLAGS = \
+C_FLAGS=\
 	-lstm8 \
 	-mstm8 \
-	--std=c11 \
-	-D STM8S003 \
+	--opt-code-size \
+	--opt-code-speed \
+	--std=c11
+LD_FLAGS= 
 ######################################
-SDCC_PATH = D:/Applications/SDCC4.5.2
-HEX2BIN_PATH = D:/Applications/Hex2bin-2.5/bin/Release
-OPENOCD_PATH = D:/Applications/openocd-v0.12.0-i686-w64-mingw32
-PATH += ${SDCC_PATH}/bin:${HEX2BIN_PATH}/bin:${OPENOCD_PATH}/bin
+SDCC_PATH=D:/Applications/SDCC4.5.2
+HEX2BIN_PATH=D:/Applications/Hex2bin-2.5/bin/Release
+OPENOCD_PATH=D:/Applications/openocd-v0.12.0-i686-w64-mingw32
+PATH+=${SDCC_PATH}/bin:${HEX2BIN_PATH}/bin:${OPENOCD_PATH}/bin
 ######################################
-CC = ${SDCC_PATH}/bin/sdcc
-LD = ${SDCC_PATH}/bin/sdld
-HEX = ${SDCC_PATH}/bin/packihx
-BIN = ${HEX2BIN_PATH}/hex2bin
-OPENOCD = ${OPENOCD_PATH}/bin/openocd
+CC=${SDCC_PATH}/bin/sdcc
+LD=${SDCC_PATH}/bin/sdld
+HEX=${SDCC_PATH}/bin/packihx
+BIN=${HEX2BIN_PATH}/hex2bin
+OPENOCD=${OPENOCD_PATH}/bin/openocd
 ######################################
 # 命令的使用案例：
 # 编译
+# *.c -> *.rel
 # sdcc -c ./a.c -o a.rel
 # sdcc -c ./b.c -o b.rel
 # 链接
-# sdld -i out.ihx a.rel b.rel
+# *.rel -> *.ihx
+# sdld -i out.ihx a.rel b.rel					# tips: Binary file start = 00000000
+# or:
+# sdcc a.rel b.rel --out-fmt-ihx -o out.ihx		# tips: Binary file start = 00008000
 # 格式转换
+# *.ihx -> *.hex|*.bin
 # packihx out.ihx > out.hex
 # hex2bin out.hex
 ######################################
@@ -40,34 +48,37 @@ ${OUT_DIR}:
 	mkdir $@
 #编译
 ${OUT_DIR}/%.rel: %.c | ${OUT_DIR}
-	${CC} ${C_FLAGS} ${C_INCLUDES} -c $< -o $@
+	${CC} ${C_FLAGS} ${C_INCLUDES} ${C_DEFS} -c $< -o $@
 OBJECTS = $(addprefix ${OUT_DIR}/,$(notdir $(C_SOURCES:.c=.rel)))
 vpath %.c $(sort $(dir $(C_SOURCES)))
 #链接
-${OUT_DIR}/output.ihx: ${OBJECTS}
-	${LD} -i $@ ${OBJECTS}
+${OUT_DIR}/${TARGET}.ihx: ${OBJECTS}
+	${CC} ${C_FLAGS} ${C_INCLUDES} ${OBJECTS} --out-fmt-ihx -o $@
 #格式转换
-${OUT_DIR}/output.hex: ${OUT_DIR}/output.ihx
+${OUT_DIR}/${TARGET}.hex: ${OUT_DIR}/${TARGET}.ihx
 	${HEX} $< > $@
 #格式转换
-${OUT_DIR}/output.bin: ${OUT_DIR}/output.hex
+${OUT_DIR}/${TARGET}.bin: ${OUT_DIR}/${TARGET}.hex
 	${BIN} $<
 ######################################
-build: ${OUT_DIR}/output.bin
+build: ${OUT_DIR}/${TARGET}.bin
 ######################################
-write: ${OUT_DIR}/output.bin
-	${OPENOCD} 
-	-f interface/stlink.cfg \
+write: ${OUT_DIR}/${TARGET}.bin
+	${OPENOCD} \
+	-f interface/stlink-dap.cfg \
 	-f target/stm8s003.cfg \
 	-c "init" \
 	-c "reset halt" \
-	-c "flash write_image erase ${OUT_DIR}/output.bin 0x8000" \
-	-c "reset run" \
+	-c "flash write_image erase ${OUT_DIR}/${TARGET}.bin 0x8000" \
+	-c "reset" \
 	-c "shutdown"
+######################################
+flash: ${OUT_DIR}/${TARGET}.bin
+	tools/stm8flash-cygwin64.exe -c stlinkv2 -p stm8s003f3  -w ${OUT_DIR}/${TARGET}.bin
 ######################################
 debug:
 	${OPENOCD} \ 
-	-f interface/stlink.cfg \
+	-f interface/stlink-dap.cfg \
 	-f target/stm8s003.cfg \
 	-c "init" \
 	-c "reset halt"

@@ -2793,7 +2793,7 @@ CFG_TypeDef;
 #elif defined(_IAR_)
  #define INTERRUPT __interrupt
 #elif defined(_SDCC_)
-#define INTERRUPT __interrupt
+#define INTERRUPT 
 #endif /* _COSMIC_ */
 
 /*============================== Handling bits ====================================*/
