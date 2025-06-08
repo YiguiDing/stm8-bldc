@@ -9,18 +9,13 @@ C_SOURCES+=
 OUT_DIR=output
 TARGET=target
 ######################################
-C_FLAGS=\
-	-lstm8 \
-	-mstm8 \
-	--opt-code-size \
-	--opt-code-speed \
-	--std=c11
-LD_FLAGS= 
+C_FLAGS= -lstm8 -mstm8 --opt-code-size --opt-code-speed --std=c11
+LD_FLAGS= -lstm8 -mstm8 --opt-code-size --opt-code-speed --std=c11
 ######################################
-SDCC_PATH=D:/Applications/SDCC4.5.2
-HEX2BIN_PATH=D:/Applications/Hex2bin-2.5/bin/Release
-OPENOCD_PATH=D:/Applications/openocd-v0.12.0-i686-w64-mingw32
-PATH+=${SDCC_PATH}/bin:${HEX2BIN_PATH}/bin:${OPENOCD_PATH}/bin
+SDCC_PATH=/cygdrive/d/Applications/SDCC4.5.2
+HEX2BIN_PATH=/cygdrive/d/Applications/Hex2bin-2.5/bin/Release
+OPENOCD_PATH=/cygdrive/d/Applications/openocd-v0.12.0-i686-w64-mingw32
+PATH+=:${SDCC_PATH}/bin:${HEX2BIN_PATH}/bin:${OPENOCD_PATH}/bin
 ######################################
 CC=${SDCC_PATH}/bin/sdcc
 LD=${SDCC_PATH}/bin/sdld
@@ -53,7 +48,7 @@ OBJECTS = $(addprefix ${OUT_DIR}/,$(notdir $(C_SOURCES:.c=.rel)))
 vpath %.c $(sort $(dir $(C_SOURCES)))
 #链接
 ${OUT_DIR}/${TARGET}.ihx: ${OBJECTS}
-	${CC} ${C_FLAGS} ${C_INCLUDES} ${OBJECTS} --out-fmt-ihx -o $@
+	${CC} ${LD_FLAGS} ${OBJECTS} --out-fmt-ihx -o $@
 #格式转换
 ${OUT_DIR}/${TARGET}.hex: ${OUT_DIR}/${TARGET}.ihx
 	${HEX} $< > $@
@@ -63,7 +58,11 @@ ${OUT_DIR}/${TARGET}.bin: ${OUT_DIR}/${TARGET}.hex
 ######################################
 build: ${OUT_DIR}/${TARGET}.bin
 ######################################
-write: ${OUT_DIR}/${TARGET}.bin
+flash: ${OUT_DIR}/${TARGET}.bin
+	tools/stm8flash-cygwin64.exe -c stlinkv2 -p stm8s003f3  -w ${OUT_DIR}/${TARGET}.bin
+######################################
+# todo: unknown error in flash command
+_flash: ${OUT_DIR}/${TARGET}.bin
 	${OPENOCD} \
 	-f interface/stlink-dap.cfg \
 	-f target/stm8s003.cfg \
@@ -72,9 +71,6 @@ write: ${OUT_DIR}/${TARGET}.bin
 	-c "flash write_image erase ${OUT_DIR}/${TARGET}.bin 0x8000" \
 	-c "reset" \
 	-c "shutdown"
-######################################
-flash: ${OUT_DIR}/${TARGET}.bin
-	tools/stm8flash-cygwin64.exe -c stlinkv2 -p stm8s003f3  -w ${OUT_DIR}/${TARGET}.bin
 ######################################
 debug:
 	${OPENOCD} \ 
