@@ -1,0 +1,7 @@
+{
+    "C_Cpp.errorSquiggles": "disabled",
+    "files.associations": {
+        "*.dbclient-js": "javascript",
+        "stm8s.h": "c"
+    }
+}
