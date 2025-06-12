@@ -9,7 +9,7 @@ void dev_adc_init()
     ADC1_PrescalerConfig(ADC1_PRESSEL_FCPU_D2);
     ADC1_ExternalTriggerConfig(ADC1_EXTTRIG_TIM, ENABLE);
     ADC1_SchmittTriggerConfig(ADC1_SCHMITTTRIG_CHANNEL0 | ADC1_SCHMITTTRIG_CHANNEL1, ENABLE);
-    ADC1_ITConfig(ADC1_IT_EOCITEN, ENABLE);
+    ADC1_ITConfig(ADC1_IT_EOCIE, ENABLE);
     ADC1_Cmd(ENABLE);
 }
 

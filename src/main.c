@@ -26,7 +26,8 @@
  */
 
 /* Includes ------------------------------------------------------------------*/
-#include "stm8s.h"
+#include "stdint.h"
+#include "dev.h"
 
 /* Private defines -----------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
@@ -40,15 +41,12 @@ void simple_delay(uint32_t ms)
 }
 void main(void)
 {
-  GPIO_DeInit(GPIOB);
-  GPIO_Init(GPIOB, GPIO_PIN_5, GPIO_MODE_OUT_PP_HIGH_SLOW);
-  GPIO_WriteHigh(GPIOB, GPIO_PIN_5);
-  /* Infinite loop */
+  dev_init();
   while (1)
   {
-    GPIO_WriteHigh(GPIOB, GPIO_PIN_5);
+    dev_led_on();
     simple_delay(1000);
-    GPIO_WriteLow(GPIOB, GPIO_PIN_5);
+    dev_led_off();
     simple_delay(1000);
   }
 }

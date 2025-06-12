@@ -66,114 +66,115 @@ void dev_pwm_set_step(uint8_t step_idx)
     case F:
         break;
     };
-    if (step == 1)
-    {
-        /* Next step: Step 2 Configuration ---------------------------- */
-        /*  Channel3 configuration */
-        TIM1_CCxCmd(TIM1_CHANNEL_3, DISABLE);
-        TIM1_CCxNCmd(TIM1_CHANNEL_3, DISABLE);
+    // if (step == 1)
+    // {
+    //     /* Next step: Step 2 Configuration ---------------------------- */
+    //     /*  Channel3 configuration */
+    //     TIM1_CCxCmd(TIM1_CHANNEL_3, DISABLE);
+    //     TIM1_CCxNCmd(TIM1_CHANNEL_3, DISABLE);
 
-        /*  Channel1 configuration */
-        TIM1_SelectOCxM(TIM1_CHANNEL_1, (TIM1_OCMode_TypeDef)TIM1_FORCEDACTION_ACTIVE);
-        TIM1_CCxCmd(TIM1_CHANNEL_1, ENABLE);
-        TIM1_CCxNCmd(TIM1_CHANNEL_1, ENABLE);
+    //     /*  Channel1 configuration */
+    //     TIM1_SelectOCxM(TIM1_CHANNEL_1, (TIM1_OCMode_TypeDef)TIM1_FORCEDACTION_ACTIVE);
+    //     TIM1_CCxCmd(TIM1_CHANNEL_1, ENABLE);
+    //     TIM1_CCxNCmd(TIM1_CHANNEL_1, ENABLE);
 
-        /*  Channel2 configuration */
-        TIM1_SelectOCxM(TIM1_CHANNEL_2, (TIM1_OCMode_TypeDef)TIM1_FORCEDACTION_INACTIVE);
-        TIM1_CCxCmd(TIM1_CHANNEL_2, ENABLE);
-        TIM1_CCxNCmd(TIM1_CHANNEL_2, ENABLE);
-        step++;
-    }
-    else if (step == 2)
-    {
-        /* Next step: Step 3 Configuration ---------------------------- */
-        /*  Channel2 configuration */
-        TIM1_SelectOCxM(TIM1_CHANNEL_2, (TIM1_OCMode_TypeDef)TIM1_FORCEDACTION_INACTIVE);
-        TIM1_CCxCmd(TIM1_CHANNEL_2, ENABLE);
-        TIM1_CCxNCmd(TIM1_CHANNEL_2, ENABLE);
+    //     /*  Channel2 configuration */
+    //     TIM1_SelectOCxM(TIM1_CHANNEL_2, (TIM1_OCMode_TypeDef)TIM1_FORCEDACTION_INACTIVE);
+    //     TIM1_CCxCmd(TIM1_CHANNEL_2, ENABLE);
+    //     TIM1_CCxNCmd(TIM1_CHANNEL_2, ENABLE);
+    //     step++;
+    // }
+    // else if (step == 2)
+    // {
+    //     /* Next step: Step 3 Configuration ---------------------------- */
+    //     /*  Channel2 configuration */
+    //     TIM1_SelectOCxM(TIM1_CHANNEL_2, (TIM1_OCMode_TypeDef)TIM1_FORCEDACTION_INACTIVE);
+    //     TIM1_CCxCmd(TIM1_CHANNEL_2, ENABLE);
+    //     TIM1_CCxNCmd(TIM1_CHANNEL_2, ENABLE);
 
-        /*  Channel3 configuration */
-        TIM1_SelectOCxM(TIM1_CHANNEL_3, (TIM1_OCMode_TypeDef)TIM1_FORCEDACTION_ACTIVE);
-        TIM1_CCxCmd(TIM1_CHANNEL_3, ENABLE);
-        TIM1_CCxNCmd(TIM1_CHANNEL_3, ENABLE);
+    //     /*  Channel3 configuration */
+    //     TIM1_SelectOCxM(TIM1_CHANNEL_3, (TIM1_OCMode_TypeDef)TIM1_FORCEDACTION_ACTIVE);
+    //     TIM1_CCxCmd(TIM1_CHANNEL_3, ENABLE);
+    //     TIM1_CCxNCmd(TIM1_CHANNEL_3, ENABLE);
 
-        /*  Channel1 configuration */
-        TIM1_CCxCmd(TIM1_CHANNEL_1, DISABLE);
-        TIM1_CCxNCmd(TIM1_CHANNEL_1, DISABLE);
-        step++;
-    }
-    else if (step == 3)
-    {
-        /* Next step: Step 4 Configuration ---------------------------- */
-        /*  Channel3 configuration */
-        TIM1_SelectOCxM(TIM1_CHANNEL_3, (TIM1_OCMode_TypeDef)TIM1_FORCEDACTION_ACTIVE);
-        TIM1_CCxCmd(TIM1_CHANNEL_3, ENABLE);
-        TIM1_CCxNCmd(TIM1_CHANNEL_3, ENABLE);
+    //     /*  Channel1 configuration */
+    //     TIM1_CCxCmd(TIM1_CHANNEL_1, DISABLE);
+    //     TIM1_CCxNCmd(TIM1_CHANNEL_1, DISABLE);
+    //     step++;
+    // }
+    // else if (step == 3)
+    // {
+    //     /* Next step: Step 4 Configuration ---------------------------- */
+    //     /*  Channel3 configuration */
+    //     TIM1_SelectOCxM(TIM1_CHANNEL_3, (TIM1_OCMode_TypeDef)TIM1_FORCEDACTION_ACTIVE);
+    //     TIM1_CCxCmd(TIM1_CHANNEL_3, ENABLE);
+    //     TIM1_CCxNCmd(TIM1_CHANNEL_3, ENABLE);
 
-        /*  Channel2 configuration */
-        TIM1_CCxCmd(TIM1_CHANNEL_2, DISABLE);
-        TIM1_CCxNCmd(TIM1_CHANNEL_2, DISABLE);
+    //     /*  Channel2 configuration */
+    //     TIM1_CCxCmd(TIM1_CHANNEL_2, DISABLE);
+    //     TIM1_CCxNCmd(TIM1_CHANNEL_2, DISABLE);
 
-        /*  Channel1 configuration */
-        TIM1_SelectOCxM(TIM1_CHANNEL_1, (TIM1_OCMode_TypeDef)TIM1_FORCEDACTION_INACTIVE);
-        TIM1_CCxCmd(TIM1_CHANNEL_1, ENABLE);
-        TIM1_CCxNCmd(TIM1_CHANNEL_1, ENABLE);
-        step++;
-    }
-    else if (step == 4)
-    {
-        /* Next step: Step 5 Configuration ---------------------------- */
-        /*  Channel3 configuration */
-        TIM1_CCxCmd(TIM1_CHANNEL_3, DISABLE);
-        TIM1_CCxNCmd(TIM1_CHANNEL_3, DISABLE);
+    //     /*  Channel1 configuration */
+    //     TIM1_SelectOCxM(TIM1_CHANNEL_1, (TIM1_OCMode_TypeDef)TIM1_FORCEDACTION_INACTIVE);
+    //     TIM1_CCxCmd(TIM1_CHANNEL_1, ENABLE);
+    //     TIM1_CCxNCmd(TIM1_CHANNEL_1, ENABLE);
+    //     step++;
+    // }
+    // else if (step == 4)
+    // {
+    //     /* Next step: Step 5 Configuration ---------------------------- */
+    //     /*  Channel3 configuration */
+    //     TIM1_CCxCmd(TIM1_CHANNEL_3, DISABLE);
+    //     TIM1_CCxNCmd(TIM1_CHANNEL_3, DISABLE);
 
-        /*  Channel1 configuration */
-        TIM1_SelectOCxM(TIM1_CHANNEL_1, (TIM1_OCMode_TypeDef)TIM1_FORCEDACTION_INACTIVE);
-        TIM1_CCxCmd(TIM1_CHANNEL_1, ENABLE);
-        TIM1_CCxNCmd(TIM1_CHANNEL_1, ENABLE);
+    //     /*  Channel1 configuration */
+    //     TIM1_SelectOCxM(TIM1_CHANNEL_1, (TIM1_OCMode_TypeDef)TIM1_FORCEDACTION_INACTIVE);
+    //     TIM1_CCxCmd(TIM1_CHANNEL_1, ENABLE);
+    //     TIM1_CCxNCmd(TIM1_CHANNEL_1, ENABLE);
 
-        /*  Channel2 configuration */
-        TIM1_SelectOCxM(TIM1_CHANNEL_2, (TIM1_OCMode_TypeDef)TIM1_FORCEDACTION_ACTIVE);
-        TIM1_CCxCmd(TIM1_CHANNEL_2, ENABLE);
-        TIM1_CCxNCmd(TIM1_CHANNEL_2, ENABLE);
-        step++;
-    }
-    else if (step == 5)
-    {
-        /* Next step: Step 6 Configuration ---------------------------- */
-        /*  Channel3 configuration */
-        TIM1_SelectOCxM(TIM1_CHANNEL_3, (TIM1_OCMode_TypeDef)TIM1_FORCEDACTION_INACTIVE);
-        TIM1_CCxCmd(TIM1_CHANNEL_3, ENABLE);
-        TIM1_CCxNCmd(TIM1_CHANNEL_3, ENABLE);
+    //     /*  Channel2 configuration */
+    //     TIM1_SelectOCxM(TIM1_CHANNEL_2, (TIM1_OCMode_TypeDef)TIM1_FORCEDACTION_ACTIVE);
+    //     TIM1_CCxCmd(TIM1_CHANNEL_2, ENABLE);
+    //     TIM1_CCxNCmd(TIM1_CHANNEL_2, ENABLE);
+    //     step++;
+    // }
+    // else if (step == 5)
+    // {
+    //     /* Next step: Step 6 Configuration ---------------------------- */
+    //     /*  Channel3 configuration */
+    //     TIM1_SelectOCxM(TIM1_CHANNEL_3, (TIM1_OCMode_TypeDef)TIM1_FORCEDACTION_INACTIVE);
+    //     TIM1_CCxCmd(TIM1_CHANNEL_3, ENABLE);
+    //     TIM1_CCxNCmd(TIM1_CHANNEL_3, ENABLE);
 
-        /*  Channel1 configuration */
-        TIM1_CCxCmd(TIM1_CHANNEL_1, DISABLE);
-        TIM1_CCxNCmd(TIM1_CHANNEL_1, DISABLE);
+    //     /*  Channel1 configuration */
+    //     TIM1_CCxCmd(TIM1_CHANNEL_1, DISABLE);
+    //     TIM1_CCxNCmd(TIM1_CHANNEL_1, DISABLE);
 
-        /*  Channel2 configuration */
-        TIM1_SelectOCxM(TIM1_CHANNEL_2, (TIM1_OCMode_TypeDef)TIM1_FORCEDACTION_ACTIVE);
-        TIM1_CCxCmd(TIM1_CHANNEL_2, ENABLE);
-        TIM1_CCxNCmd(TIM1_CHANNEL_2, ENABLE);
-        step++;
-    }
-    else
-    {
-        /* Next step: Step 1 Configuration ---------------------------- */
-        /*  Channel1 configuration */
-        TIM1_SelectOCxM(TIM1_CHANNEL_1, (TIM1_OCMode_TypeDef)TIM1_FORCEDACTION_ACTIVE);
-        TIM1_CCxCmd(TIM1_CHANNEL_1, ENABLE);
-        TIM1_CCxNCmd(TIM1_CHANNEL_1, ENABLE);
+    //     /*  Channel2 configuration */
+    //     TIM1_SelectOCxM(TIM1_CHANNEL_2, (TIM1_OCMode_TypeDef)TIM1_FORCEDACTION_ACTIVE);
+    //     TIM1_CCxCmd(TIM1_CHANNEL_2, ENABLE);
+    //     TIM1_CCxNCmd(TIM1_CHANNEL_2, ENABLE);
+    //     step++;
+    // }
+    // else
+    // {
+    //     /* Next step: Step 1 Configuration ---------------------------- */
+    //     /*  Channel1 configuration */
+    //     TIM1_SelectOCxM(TIM1_CHANNEL_1, (TIM1_OCMode_TypeDef)TIM1_FORCEDACTION_ACTIVE);
+    //     TIM1_CCxCmd(TIM1_CHANNEL_1, ENABLE);
+    //     TIM1_CCxNCmd(TIM1_CHANNEL_1, ENABLE);
 
-        /*  Channel3 configuration */
-        TIM1_SelectOCxM(TIM1_CHANNEL_3, (TIM1_OCMode_TypeDef)TIM1_FORCEDACTION_INACTIVE);
-        TIM1_CCxCmd(TIM1_CHANNEL_3, ENABLE);
-        TIM1_CCxNCmd(TIM1_CHANNEL_3, ENABLE);
+    //     /*  Channel3 configuration */
+    //     TIM1_SelectOCxM(TIM1_CHANNEL_3, (TIM1_OCMode_TypeDef)TIM1_FORCEDACTION_INACTIVE);
+    //     TIM1_CCxCmd(TIM1_CHANNEL_3, ENABLE);
+    //     TIM1_CCxNCmd(TIM1_CHANNEL_3, ENABLE);
 
-        /*  Channel2 configuration */
-        TIM1_CCxCmd(TIM1_CHANNEL_2, DISABLE);
-        TIM1_CCxNCmd(TIM1_CHANNEL_2, DISABLE);
-        step = 1;
-    }
+    //     /*  Channel2 configuration */
+    //     TIM1_CCxCmd(TIM1_CHANNEL_2, DISABLE);
+    //     TIM1_CCxNCmd(TIM1_CHANNEL_2, DISABLE);
+    //     step = 1;
+    // }
+
 }
 /**
  * pwm占空比设置

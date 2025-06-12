@@ -12,9 +12,9 @@ TARGET=target
 C_FLAGS= -lstm8 -mstm8 --opt-code-size --opt-code-speed --std=c11
 LD_FLAGS= -lstm8 -mstm8 --opt-code-size --opt-code-speed --std=c11
 ######################################
-SDCC_PATH=/cygdrive/d/Applications/SDCC4.5.2
-HEX2BIN_PATH=/cygdrive/d/Applications/Hex2bin-2.5/bin/Release
-OPENOCD_PATH=/cygdrive/d/Applications/openocd-v0.12.0-i686-w64-mingw32
+SDCC_PATH=/cygdrive/c/app/SDCC
+HEX2BIN_PATH=/cygdrive/c/app/Hex2bin-2.5/bin/Release
+OPENOCD_PATH=/cygdrive/c/app/openocd-v0.12.0-i686-w64-mingw32
 PATH+=:${SDCC_PATH}/bin:${HEX2BIN_PATH}/bin:${OPENOCD_PATH}/bin
 ######################################
 CC=${SDCC_PATH}/bin/sdcc
