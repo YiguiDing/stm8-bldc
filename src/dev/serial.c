@@ -14,7 +14,8 @@ void dev_serial_send(uint8_t *data, uint16_t len)
         while (UART1_GetFlagStatus(UART1_FLAG_TXE))
             UART1_SendData8(*(data++));
 }
-__attribute__((weak)) void dev_serial_on_receive(uint8_t *data, uint16_t len)
+// __attribute__((weak))
+void dev_serial_on_receive(uint8_t *data, uint16_t len)
 {
 }
 
@@ -26,15 +27,17 @@ INTERRUPT_HANDLER(UART1_RX_IRQHandler, 18)
 {
     if (UART1_GetITStatus(UART1_IT_RXNE))
     {
-        rx_len[rx_len] = UART1_ReceiveData8();
+        rx_buf[rx_len] = UART1_ReceiveData8();
         rx_len = ++rx_len % RX_BUFFER_LENGTH;
-        return UART1_ClearITPendingBit(UART1_IT_RXNE);
+        UART1_ClearITPendingBit(UART1_IT_RXNE);
+        return;
     }
     else if (UART1_GetFlagStatus(UART1_IT_IDLE))
     {
         dev_serial_on_receive(rx_buf, rx_len);
         rx_len = 0;
-        return UART1_ClearITPendingBit(UART1_IT_IDLE);
+        UART1_ClearITPendingBit(UART1_IT_IDLE);
+        return;
     }
     else
     {

@@ -28,6 +28,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "stdint.h"
 #include "dev.h"
+#include "stm8s.h"
 
 /* Private defines -----------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
@@ -46,8 +47,10 @@ void main(void)
   {
     dev_led_on();
     simple_delay(1000);
+    // vtimer_delay(1000);
     dev_led_off();
     simple_delay(1000);
+    // vtimer_delay(1000);
   }
 }
 

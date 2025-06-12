@@ -10,7 +10,8 @@
                 "UNICODE",
                 "_UNICODE",
                 "_SDCC_",
-                "STM8S003"
+                "STM8S003",
+                "USE_STDPERIPH_DRIVER"
             ],
             "compilerPath": "D:\\Applications\\SDCC4.5.2\\bin\\sdcc.exe",
             "cStandard": "c11",

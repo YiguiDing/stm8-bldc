@@ -17,5 +17,5 @@ void dev_clock_init()
     CLK_ClockSwitchConfig(CLK_SWITCHMODE_MANUAL, CLK_SOURCE_HSI, DISABLE, CLK_CURRENTCLOCKSTATE_DISABLE); // 选择内部时钟(默认内部时钟)
     CLK_PeripheralClockConfig(CLK_PERIPHERAL_TIMER1, ENABLE);                                             // 开启定时器1时钟(默认开)
     CLK_PeripheralClockConfig(CLK_PERIPHERAL_UART1, ENABLE);                                              // 开启串口1时钟(默认开)
-    CLK_PeripheralClockConfig(CLK_PERIPHERAL_ADC, ENABLE);                                                // 开启ADC时钟(默认开)
+    CLK_PeripheralClockConfig(CLK_PERIPHERAL_ADC, ENABLE);      
 }
