@@ -1,0 +1,21 @@
+{
+    // 使用 IntelliSense 了解相关属性。 
+    // 悬停以查看现有属性的描述。
+    // 欲了解更多信息，请访问: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "stm8-debug",
+            "request": "launch",
+            "name": "sdcc launch",
+            "serverType": "stm8-sdcc",
+            "executable": ".\\output\\Debug\\target.elf",
+            "cpu": "STM8S003F3",
+            "port": "3333",
+            "openOcdConfigs": [
+                "interface/stlink.cfg",
+                "target/stm8s003.cfg"
+            ]
+        }
+    ]
+}

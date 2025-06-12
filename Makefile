@@ -38,47 +38,63 @@ OPENOCD=${OPENOCD_PATH}/bin/openocd
 # packihx out.ihx > out.hex
 # hex2bin out.hex
 ######################################
-#目录
-${OUT_DIR}:
-	mkdir $@
-#编译
-${OUT_DIR}/%.rel: %.c | ${OUT_DIR}
-	${CC} ${C_FLAGS} ${C_INCLUDES} ${C_DEFS} -c $< -o $@
-OBJECTS = $(addprefix ${OUT_DIR}/,$(notdir $(C_SOURCES:.c=.rel)))
+# 搜素路径
 vpath %.c $(sort $(dir $(C_SOURCES)))
+######################################
+#               Release              #
+######################################
+#目录
+${OUT_DIR}/Release/:
+	mkdir -p $@
+#编译
+${OUT_DIR}/Release/%.rel: %.c ${OUT_DIR}/Release/
+	${CC} ${C_FLAGS} ${C_INCLUDES} ${C_DEFS} --compile-only $< -o $@
 #链接
-${OUT_DIR}/${TARGET}.ihx: ${OBJECTS}
-	${CC} ${LD_FLAGS} ${OBJECTS} --out-fmt-ihx -o $@
-#格式转换
-${OUT_DIR}/${TARGET}.hex: ${OUT_DIR}/${TARGET}.ihx
-	${HEX} $< > $@
-#格式转换
-${OUT_DIR}/${TARGET}.bin: ${OUT_DIR}/${TARGET}.hex
-	${BIN} $<
+RELEASE_OBJECTS = $(addprefix ${OUT_DIR}/Release/,$(notdir $(C_SOURCES:.c=.rel)))
+${OUT_DIR}/Release/${TARGET}.hex: ${RELEASE_OBJECTS}
+	${CC} ${LD_FLAGS} --out-fmt-ihx ${RELEASE_OBJECTS} -o $@
+#命名
+release: ${OUT_DIR}/Release/${TARGET}.hex
 ######################################
-build: ${OUT_DIR}/${TARGET}.bin
+#                Debug               #
 ######################################
-flash: ${OUT_DIR}/${TARGET}.bin
-	tools/stm8flash-cygwin64.exe -c stlinkv2 -p stm8s003f3  -w ${OUT_DIR}/${TARGET}.bin
+DEBUG = --debug --out-fmt-elf
+#目录
+${OUT_DIR}/Debug/:
+	mkdir -p $@
+#编译
+${OUT_DIR}/Debug/%.rel: %.c ${OUT_DIR}/Debug/
+	${CC} ${C_FLAGS} ${DEBUG} ${C_INCLUDES} ${C_DEFS} --compile-only $< -o $@
+#链接
+DEBUG_OBJECTS = $(addprefix ${OUT_DIR}/Debug/,$(notdir $(C_SOURCES:.c=.rel)))
+${OUT_DIR}/Debug/${TARGET}.elf: ${DEBUG_OBJECTS}
+	${CC} ${LD_FLAGS} ${DEBUG} ${DEBUG_OBJECTS} -o $@
+#命名
+debug: ${OUT_DIR}/Debug/${TARGET}.elf
+######################################
+all: release debug
+######################################
+clean:
+	rm -rf ${OUT_DIR}
+######################################
+program: all
+	tools/stm8flash-cygwin64.exe -c stlinkv2 -p stm8s003f3  -w ${OUT_DIR}/Release/${TARGET}.hex
 ######################################
 # todo: unknown error in flash command
-_flash: ${OUT_DIR}/${TARGET}.bin
+_program: release
 	${OPENOCD} \
 	-f interface/stlink-dap.cfg \
 	-f target/stm8s003.cfg \
 	-c "init" \
 	-c "reset halt" \
-	-c "flash write_image erase ${OUT_DIR}/${TARGET}.bin 0x8000" \
+	-c "flash write_image erase ${OUT_DIR}/${TARGET}.hex 0x8000" \
 	-c "reset" \
 	-c "shutdown"
 ######################################
-debug:
+_debug:
 	${OPENOCD} \ 
 	-f interface/stlink-dap.cfg \
 	-f target/stm8s003.cfg \
 	-c "init" \
 	-c "reset halt"
-######################################
-clean:
-	rm -rf ${OUT_DIR}
 ######################################
