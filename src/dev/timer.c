@@ -11,7 +11,7 @@
 // 24Mhz / 128 => 5.28us ; arr=>189.375 ; ovf => 1ms ;
 // Arr = (Freq/Prescaler)/1ms = (Freq/Prescaler)/1 * 1000
 
-#define DELTAT_MS 2
+#define DELTAT_MS 1
 #define ArrValue ((DELTAT_MS * STM8_FREQ_MHZ * 1000) / 128)
 
 void dev_timer_init()
@@ -25,6 +25,8 @@ void dev_timer_init()
     enableInterrupts(); // 打开总中断
     // disableInterrupts(); // 关闭总中断
 
+    dev_timer_clear();
+    
     /* Enable TIM4 */
     TIM4_Cmd(ENABLE);
 }
@@ -35,6 +37,46 @@ void dev_timer_init()
  */
 INTERRUPT_HANDLER(TIM4_UPD_OVF_IRQHandler, 23)
 {
-    vtimer_update();
+    dev_timer_update();
     TIM4_ClearITPendingBit(TIM4_IT_UPDATE);
+}
+
+static Vtimer vtimers[VTIMER_MAX_COUNT];
+
+void dev_timer_clear(void)
+{
+    for (uint8_t i = 0; i < VTIMER_MAX_COUNT; i++)
+    {
+        vtimers[i].counter = 0;
+        vtimers[i].callback = 0;
+    }
+}
+
+void dev_timer_set(VTimers timer, uint16_t ms, void (*callback)(void))
+{
+    vtimers[timer].counter = ms;
+    vtimers[timer].callback = callback;
+}
+
+void dev_timer_await(VTimers timer)
+{
+    while (vtimers[timer].counter != 0)
+        ;
+}
+void dev_timer_delay(uint16_t ms)
+{
+    dev_timer_set(Timer_9, ms, 0);
+    dev_timer_await(Timer_9);
+}
+void dev_timer_update(void)
+{
+    for (uint8_t i = 0; i < VTIMER_MAX_COUNT; i++)
+    {
+        if (vtimers[i].counter)
+        {
+            vtimers[i].counter--;
+            if (vtimers[i].callback)
+                vtimers[i].callback();
+        }
+    }
 }

@@ -1,15 +1,13 @@
 #include "dev.h"
-#include "stdint.h"
-
 void main(void)
 {
   dev_init();
   while (1)
   {
     dev_led_on();
-    vtimer_delay(500);
+    dev_timer_delay(500);
     dev_led_off();
-    vtimer_delay(500);
+    dev_timer_delay(500);
   }
 }
 

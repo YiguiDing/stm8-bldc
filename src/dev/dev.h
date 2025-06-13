@@ -1,6 +1,8 @@
 #ifndef DEV_H
 #define DEV_H
 
+#include "stdint.h"
+
 #include "stm8s_it.h"
 
 #include "clock.h"
@@ -9,7 +11,6 @@
 #include "adc.h"
 
 #include "timer.h"
-#include "vtimer.h"
 
 #include "serial.h"
 
