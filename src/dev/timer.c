@@ -18,7 +18,7 @@ void dev_timer_init()
 {
     TIM4_DeInit();
     /* Time base configuration */
-    TIM4_TimeBaseInit(TIM4_PRESCALER_128, 125);
+    TIM4_TimeBaseInit(TIM4_PRESCALER_128, ArrValue);
     ITC_SetSoftwarePriority(ITC_IRQ_TIM4_OVF, ITC_PRIORITYLEVEL_1);
 
     TIM4_ITConfig(TIM4_IT_UPDATE, ENABLE);
@@ -28,11 +28,13 @@ void dev_timer_init()
     /* Enable TIM4 */
     TIM4_Cmd(ENABLE);
 }
-
-uint8_t idx=0;
+/**
+ * @brief Timer4 Update/Overflow Interrupt routine.
+ * @param  None
+ * @retval None
+ */
 INTERRUPT_HANDLER(TIM4_UPD_OVF_IRQHandler, 23)
 {
-    idx++;
     vtimer_update();
     TIM4_ClearITPendingBit(TIM4_IT_UPDATE);
 }

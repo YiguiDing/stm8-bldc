@@ -4,5 +4,4 @@
 void dev_adc_init();
 void dev_adc_on_update();
 
-
 #endif

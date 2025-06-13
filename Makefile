@@ -53,6 +53,7 @@ ${OUT_DIR}/Release/%.rel: %.c ${OUT_DIR}/Release/
 RELEASE_OBJECTS = $(addprefix ${OUT_DIR}/Release/,$(notdir $(C_SOURCES:.c=.rel)))
 ${OUT_DIR}/Release/${TARGET}.hex: ${RELEASE_OBJECTS}
 	${CC} ${LD_FLAGS} --out-fmt-ihx ${RELEASE_OBJECTS} -o $@
+	${BIN} $@
 #命名
 release: ${OUT_DIR}/Release/${TARGET}.hex
 ######################################
@@ -69,6 +70,7 @@ ${OUT_DIR}/Debug/%.rel: %.c ${OUT_DIR}/Debug/
 DEBUG_OBJECTS = $(addprefix ${OUT_DIR}/Debug/,$(notdir $(C_SOURCES:.c=.rel)))
 ${OUT_DIR}/Debug/${TARGET}.elf: ${DEBUG_OBJECTS}
 	${CC} ${LD_FLAGS} ${DEBUG} ${DEBUG_OBJECTS} -o $@
+	${BIN} $@
 #命名
 debug: ${OUT_DIR}/Debug/${TARGET}.elf
 ######################################
