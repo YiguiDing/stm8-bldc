@@ -1,12 +1,53 @@
 #include "pwm.h"
 #include "stm8s.h"
+
+// 转子转速 10000 RPM
+// 转子角频率 10000 / 60 = 166.66 Hz
+// 电角频率 166.66 * PP =2.333 khz
+// 六步换向速度 2.333 khz/6 = 388.88hz
+// 六步换向周期 0.0025714s = 2.5714ms
 void dev_pwm_init()
 {
     TIM1_DeInit();
     // 16Mhz / 1000 => 16khz
-    TIM1_TimeBaseInit(1000 - 1, TIM1_COUNTERMODE_UP, 1000, 0);
+    // 16Mhz / 100 => 160khz
+    // 16Mhz / 160 => 100khz
+    // 16Mhz / 200 => 80khz
+    // 16Mhz / 300 => 53.3khz
+    // 16Mhz / 400 => 40khz
+    TIM1_TimeBaseInit(160 - 1, TIM1_COUNTERMODE_UP, 1000, 0);
+    TIM1_OC1Init(TIM1_OCMODE_PWM1,                                   // mode
+                 TIM1_OUTPUTSTATE_ENABLE, TIM1_OUTPUTNSTATE_DISABLE, // enable disable
+                 0,                                                  // pulse width
+                 TIM1_OCPOLARITY_HIGH, TIM1_OCNPOLARITY_HIGH,        // polarity
+                 TIM1_OCIDLESTATE_RESET, TIM1_OCNIDLESTATE_SET       // idle state,when OCE(TIM1_CtrlPWMOutputs)=DISABLE
+    );
+    TIM1_OC2Init(TIM1_OCMODE_PWM1,
+                 TIM1_OUTPUTSTATE_ENABLE, TIM1_OUTPUTNSTATE_DISABLE,
+                 0,
+                 TIM1_OCPOLARITY_HIGH, TIM1_OCNPOLARITY_HIGH,
+                 TIM1_OCIDLESTATE_RESET, TIM1_OCNIDLESTATE_SET);
+    TIM1_OC3Init(TIM1_OCMODE_PWM1,
+                 TIM1_OUTPUTSTATE_ENABLE, TIM1_OUTPUTNSTATE_DISABLE,
+                 0,
+                 TIM1_OCPOLARITY_HIGH, TIM1_OCNPOLARITY_HIGH,
+                 TIM1_OCIDLESTATE_RESET, TIM1_OCNIDLESTATE_SET);
+    TIM1_Cmd(ENABLE);
     TIM1_CtrlPWMOutputs(ENABLE);
 }
+
+// void enable_alternate_function()
+// {
+// OPT2.AFR0 = 1 # C5=TIM2_CH1; C6=TIM1_CH1； C7=TIM1_CH2；
+// uint16_t OPT2 = FLASH_ReadOptionByte(&OPT->OPT2);
+// if ((OPT2 & 0x0100) == 0x00)
+// {
+//     FLASH_Unlock(FLASH_MEMTYPE_DATA);
+//     FLASH_ProgramOptionByte(&OPT->OPT2, 0x01);
+//     FLASH_Lock(FLASH_MEMTYPE_DATA);
+//     // WWDG_SWReset();
+// }
+// }
 
 // step A B C
 //  1   F H L
@@ -20,161 +61,91 @@ void dev_pwm_init()
 #define L 1
 #define F 2
 
+// CCMR
+#define CCMR_PWM TIM1_OCMODE_PWM1
+#define CCMR_LOW TIM1_OCMODE_INACTIVE
+#define CCMR_OFF TIM1_OCMODE_INACTIVE
+
+#define CCER1_CH1_ON 0x01
+#define CCER1_CH2_ON 0x10
+#define CCER2_CH3_ON 0x01
+#define CCER2_CH4_ON 0x10
+
+#define CCER1_CH1_OFF 0x00
+#define CCER1_CH2_OFF 0x00
+#define CCER2_CH3_OFF 0x00
+#define CCER2_CH4_OFF 0x00
+
 typedef struct
 {
-    uint8_t ch1;
-    uint8_t ch2;
-    uint8_t ch3;
-} Step;
+    uint8_t CCMR1; /*!< CC mode register 1 */
+    uint8_t CCMR2; /*!< CC mode register 2 */
+    uint8_t CCMR3; /*!< CC mode register 3 */
+    uint8_t CCER1; /*!< CC enable register 1 */
+    uint8_t CCER2; /*!< CC enable register 2 */
+} CC_REG_STATE;
 
-const Step channel_steps_ccw[6] = {
-    {F, H, L},
-    {L, H, F},
-    {L, F, H},
-    {F, L, H},
-    {H, L, F},
-    {H, F, L},
+const CC_REG_STATE channel_steps_ccw[6] = {
+    // ch1=F, ch2=H, ch3=L
+    {
+        .CCMR1 = CCMR_OFF,
+        .CCMR2 = CCMR_PWM,
+        .CCMR3 = CCMR_LOW,
+        .CCER1 = CCER1_CH1_OFF | CCER1_CH2_ON,
+        .CCER2 = CCER2_CH3_ON,
+    },
+    // ch1=L ch2=H ch3=F
+    {
+        .CCMR1 = CCMR_LOW,
+        .CCMR2 = CCMR_PWM,
+        .CCMR3 = CCMR_OFF,
+        .CCER1 = CCER1_CH1_ON | CCER1_CH2_ON,
+        .CCER2 = CCER2_CH3_OFF,
+    },
+    // ch1=L ch2=F ch3=H
+    {
+        .CCMR1 = CCMR_LOW,
+        .CCMR2 = CCMR_OFF,
+        .CCMR3 = CCMR_PWM,
+        .CCER1 = CCER1_CH1_ON | CCER1_CH2_OFF,
+        .CCER2 = CCER2_CH3_ON,
+    },
+    // ch1=F ch2=L ch3=H
+    {
+        .CCMR1 = CCMR_OFF,
+        .CCMR2 = CCMR_LOW,
+        .CCMR3 = CCMR_PWM,
+        .CCER1 = CCER1_CH1_OFF | CCER1_CH2_ON,
+        .CCER2 = CCER2_CH3_ON,
+    },
+    // ch1=H ch2=L ch3=F
+    {
+        .CCMR1 = CCMR_PWM,
+        .CCMR2 = CCMR_LOW,
+        .CCMR3 = CCMR_OFF,
+        .CCER1 = CCER1_CH1_ON | CCER1_CH2_ON,
+        .CCER2 = CCER2_CH3_OFF,
+    },
+    // ch1=H ch2=F ch3=L
+    {
+        .CCMR1 = CCMR_PWM,
+        .CCMR2 = CCMR_OFF,
+        .CCMR3 = CCMR_LOW,
+        .CCER1 = CCER1_CH1_ON | CCER1_CH2_OFF,
+        .CCER2 = CCER2_CH3_ON,
+    },
 };
 
-void dev_pwm_set_step(uint8_t step_idx)
+void dev_pwm_set_step(uint8_t step)
 {
-    Step step = channel_steps_ccw[step_idx];
-    switch (step.ch1)
-    {
-    case H:
-        break;
-    case L:
-        break;
-    case F:
-        break;
-    };
-    switch (step.ch2)
-    {
-    case H:
-        break;
-    case L:
-        break;
-    case F:
-        break;
-    };
-    switch (step.ch3)
-    {
-    case H:
-        break;
-    case L:
-        break;
-    case F:
-        break;
-    };
-    // if (step == 1)
-    // {
-    //     /* Next step: Step 2 Configuration ---------------------------- */
-    //     /*  Channel3 configuration */
-    //     TIM1_CCxCmd(TIM1_CHANNEL_3, DISABLE);
-    //     TIM1_CCxNCmd(TIM1_CHANNEL_3, DISABLE);
-
-    //     /*  Channel1 configuration */
-    //     TIM1_SelectOCxM(TIM1_CHANNEL_1, (TIM1_OCMode_TypeDef)TIM1_FORCEDACTION_ACTIVE);
-    //     TIM1_CCxCmd(TIM1_CHANNEL_1, ENABLE);
-    //     TIM1_CCxNCmd(TIM1_CHANNEL_1, ENABLE);
-
-    //     /*  Channel2 configuration */
-    //     TIM1_SelectOCxM(TIM1_CHANNEL_2, (TIM1_OCMode_TypeDef)TIM1_FORCEDACTION_INACTIVE);
-    //     TIM1_CCxCmd(TIM1_CHANNEL_2, ENABLE);
-    //     TIM1_CCxNCmd(TIM1_CHANNEL_2, ENABLE);
-    //     step++;
-    // }
-    // else if (step == 2)
-    // {
-    //     /* Next step: Step 3 Configuration ---------------------------- */
-    //     /*  Channel2 configuration */
-    //     TIM1_SelectOCxM(TIM1_CHANNEL_2, (TIM1_OCMode_TypeDef)TIM1_FORCEDACTION_INACTIVE);
-    //     TIM1_CCxCmd(TIM1_CHANNEL_2, ENABLE);
-    //     TIM1_CCxNCmd(TIM1_CHANNEL_2, ENABLE);
-
-    //     /*  Channel3 configuration */
-    //     TIM1_SelectOCxM(TIM1_CHANNEL_3, (TIM1_OCMode_TypeDef)TIM1_FORCEDACTION_ACTIVE);
-    //     TIM1_CCxCmd(TIM1_CHANNEL_3, ENABLE);
-    //     TIM1_CCxNCmd(TIM1_CHANNEL_3, ENABLE);
-
-    //     /*  Channel1 configuration */
-    //     TIM1_CCxCmd(TIM1_CHANNEL_1, DISABLE);
-    //     TIM1_CCxNCmd(TIM1_CHANNEL_1, DISABLE);
-    //     step++;
-    // }
-    // else if (step == 3)
-    // {
-    //     /* Next step: Step 4 Configuration ---------------------------- */
-    //     /*  Channel3 configuration */
-    //     TIM1_SelectOCxM(TIM1_CHANNEL_3, (TIM1_OCMode_TypeDef)TIM1_FORCEDACTION_ACTIVE);
-    //     TIM1_CCxCmd(TIM1_CHANNEL_3, ENABLE);
-    //     TIM1_CCxNCmd(TIM1_CHANNEL_3, ENABLE);
-
-    //     /*  Channel2 configuration */
-    //     TIM1_CCxCmd(TIM1_CHANNEL_2, DISABLE);
-    //     TIM1_CCxNCmd(TIM1_CHANNEL_2, DISABLE);
-
-    //     /*  Channel1 configuration */
-    //     TIM1_SelectOCxM(TIM1_CHANNEL_1, (TIM1_OCMode_TypeDef)TIM1_FORCEDACTION_INACTIVE);
-    //     TIM1_CCxCmd(TIM1_CHANNEL_1, ENABLE);
-    //     TIM1_CCxNCmd(TIM1_CHANNEL_1, ENABLE);
-    //     step++;
-    // }
-    // else if (step == 4)
-    // {
-    //     /* Next step: Step 5 Configuration ---------------------------- */
-    //     /*  Channel3 configuration */
-    //     TIM1_CCxCmd(TIM1_CHANNEL_3, DISABLE);
-    //     TIM1_CCxNCmd(TIM1_CHANNEL_3, DISABLE);
-
-    //     /*  Channel1 configuration */
-    //     TIM1_SelectOCxM(TIM1_CHANNEL_1, (TIM1_OCMode_TypeDef)TIM1_FORCEDACTION_INACTIVE);
-    //     TIM1_CCxCmd(TIM1_CHANNEL_1, ENABLE);
-    //     TIM1_CCxNCmd(TIM1_CHANNEL_1, ENABLE);
-
-    //     /*  Channel2 configuration */
-    //     TIM1_SelectOCxM(TIM1_CHANNEL_2, (TIM1_OCMode_TypeDef)TIM1_FORCEDACTION_ACTIVE);
-    //     TIM1_CCxCmd(TIM1_CHANNEL_2, ENABLE);
-    //     TIM1_CCxNCmd(TIM1_CHANNEL_2, ENABLE);
-    //     step++;
-    // }
-    // else if (step == 5)
-    // {
-    //     /* Next step: Step 6 Configuration ---------------------------- */
-    //     /*  Channel3 configuration */
-    //     TIM1_SelectOCxM(TIM1_CHANNEL_3, (TIM1_OCMode_TypeDef)TIM1_FORCEDACTION_INACTIVE);
-    //     TIM1_CCxCmd(TIM1_CHANNEL_3, ENABLE);
-    //     TIM1_CCxNCmd(TIM1_CHANNEL_3, ENABLE);
-
-    //     /*  Channel1 configuration */
-    //     TIM1_CCxCmd(TIM1_CHANNEL_1, DISABLE);
-    //     TIM1_CCxNCmd(TIM1_CHANNEL_1, DISABLE);
-
-    //     /*  Channel2 configuration */
-    //     TIM1_SelectOCxM(TIM1_CHANNEL_2, (TIM1_OCMode_TypeDef)TIM1_FORCEDACTION_ACTIVE);
-    //     TIM1_CCxCmd(TIM1_CHANNEL_2, ENABLE);
-    //     TIM1_CCxNCmd(TIM1_CHANNEL_2, ENABLE);
-    //     step++;
-    // }
-    // else
-    // {
-    //     /* Next step: Step 1 Configuration ---------------------------- */
-    //     /*  Channel1 configuration */
-    //     TIM1_SelectOCxM(TIM1_CHANNEL_1, (TIM1_OCMode_TypeDef)TIM1_FORCEDACTION_ACTIVE);
-    //     TIM1_CCxCmd(TIM1_CHANNEL_1, ENABLE);
-    //     TIM1_CCxNCmd(TIM1_CHANNEL_1, ENABLE);
-
-    //     /*  Channel3 configuration */
-    //     TIM1_SelectOCxM(TIM1_CHANNEL_3, (TIM1_OCMode_TypeDef)TIM1_FORCEDACTION_INACTIVE);
-    //     TIM1_CCxCmd(TIM1_CHANNEL_3, ENABLE);
-    //     TIM1_CCxNCmd(TIM1_CHANNEL_3, ENABLE);
-
-    //     /*  Channel2 configuration */
-    //     TIM1_CCxCmd(TIM1_CHANNEL_2, DISABLE);
-    //     TIM1_CCxNCmd(TIM1_CHANNEL_2, DISABLE);
-    //     step = 1;
-    // }
-
+    disableInterrupts();
+    CC_REG_STATE state = channel_steps_ccw[step];
+    TIM1->CCER1 = state.CCER1;
+    TIM1->CCER2 = state.CCER2;
+    TIM1->CCMR1 = state.CCMR1;
+    TIM1->CCMR2 = state.CCMR2;
+    TIM1->CCMR3 = state.CCMR3;
+    enableInterrupts();
 }
 /**
  * pwm占空比设置
@@ -183,6 +154,6 @@ void dev_pwm_set_step(uint8_t step_idx)
 void dev_pwm_set_duty(uint16_t duty)
 {
 
-    TIM1->CCR1H = TIM1->CCR2H = TIM1->CCR3H = duty << 8;
+    TIM1->CCR1H = TIM1->CCR2H = TIM1->CCR3H = duty >> 8;
     TIM1->CCR1L = TIM1->CCR2L = TIM1->CCR3L = duty;
 }

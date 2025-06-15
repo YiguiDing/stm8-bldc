@@ -3,7 +3,7 @@
 
 #include "stm8s.h"
 
-#define VTIMER_MAX_COUNT 10
+#define VTIMER_MAX_COUNT 3
 
 typedef struct
 {
@@ -16,13 +16,13 @@ typedef enum
     Timer_0,
     Timer_1,
     Timer_2,
-    Timer_3,
-    Timer_4,
-    Timer_5,
-    Timer_6,
-    Timer_7,
-    Timer_8,
-    Timer_9,
+    // Timer_3,
+    // Timer_4,
+    // Timer_5,
+    // Timer_6,
+    // Timer_7,
+    // Timer_8,
+    // Timer_9,
 } VTimers;
 
 

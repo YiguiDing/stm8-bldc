@@ -26,7 +26,7 @@ void dev_timer_init()
     // disableInterrupts(); // 关闭总中断
 
     dev_timer_clear();
-    
+
     /* Enable TIM4 */
     TIM4_Cmd(ENABLE);
 }
@@ -65,8 +65,8 @@ void dev_timer_await(VTimers timer)
 }
 void dev_timer_delay(uint16_t ms)
 {
-    dev_timer_set(Timer_9, ms, 0);
-    dev_timer_await(Timer_9);
+    dev_timer_set(Timer_0, ms, 0);
+    dev_timer_await(Timer_0);
 }
 void dev_timer_update(void)
 {
@@ -75,7 +75,7 @@ void dev_timer_update(void)
         if (vtimers[i].counter)
         {
             vtimers[i].counter--;
-            if (vtimers[i].callback)
+            if (vtimers[i].counter == 0 && vtimers[i].callback)
                 vtimers[i].callback();
         }
     }

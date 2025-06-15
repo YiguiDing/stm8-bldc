@@ -4,5 +4,6 @@
 void dev_led_init();
 void dev_led_on();
 void dev_led_off();
+void dev_led_toggle();
 
 #endif

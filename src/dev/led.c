@@ -16,3 +16,8 @@ void dev_led_off()
 {
     GPIO_WriteHigh(GPIOB, GPIO_PIN_5);
 }
+
+void dev_led_toggle()
+{
+    GPIO_WriteReverse(GPIOB, GPIO_PIN_5);
+}
