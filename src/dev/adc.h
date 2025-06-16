@@ -2,6 +2,6 @@
 #define ADC_H
 
 void dev_adc_init();
-void dev_adc_on_update();
+void dev_adc_on_complete();
 
 #endif
