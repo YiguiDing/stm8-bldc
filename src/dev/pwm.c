@@ -8,6 +8,10 @@
 // 六步换向周期 0.0025714s = 2.5714ms
 void dev_pwm_init()
 {
+    GPIO_DeInit(PORT);
+    GPIO_Init(PORT, GPIO_CH1_L, GPIO_MODE_OUT_PP_LOW_FAST);
+    GPIO_Init(PORT, GPIO_CH2_L, GPIO_MODE_OUT_PP_LOW_FAST);
+    GPIO_Init(PORT, GPIO_CH3_L, GPIO_MODE_OUT_PP_LOW_FAST);
     TIM1_DeInit();
     // 16Mhz / 1000 => 16khz
     // 16Mhz / 100 => 160khz
@@ -57,25 +61,6 @@ void dev_pwm_init()
 //  5   H L F
 //  6   H F L
 
-#define H 0
-#define L 1
-#define F 2
-
-// CCMR
-#define CCMR_PWM TIM1_OCMODE_PWM1
-#define CCMR_LOW TIM1_OCMODE_INACTIVE
-#define CCMR_OFF TIM1_OCMODE_INACTIVE
-
-#define CCER1_CH1_ON 0x01
-#define CCER1_CH2_ON 0x10
-#define CCER2_CH3_ON 0x01
-#define CCER2_CH4_ON 0x10
-
-#define CCER1_CH1_OFF 0x00
-#define CCER1_CH2_OFF 0x00
-#define CCER2_CH3_OFF 0x00
-#define CCER2_CH4_OFF 0x00
-
 typedef struct
 {
     uint8_t CCMR1; /*!< CC mode register 1 */
@@ -85,8 +70,28 @@ typedef struct
     uint8_t CCER2; /*!< CC enable register 2 */
 } CC_REG_STATE;
 
-const CC_REG_STATE channel_steps_ccw[6] = {
-    // ch1=F, ch2=H, ch3=L
+// CCMR
+#define CCMR_PWM TIM1_OCMODE_PWM1     // pwm 模式
+#define CCMR_LOW TIM1_OCMODE_INACTIVE // 强制拉低
+#define CCMR_OFF TIM1_OCMODE_INACTIVE //
+
+// CCER1
+#define CCER1_CH1_ON 0x01 // 通道开关
+#define CCER1_CH1_OFF 0x00
+#define CCER1_CH2_ON 0x10 // 通道开关
+#define CCER1_CH2_OFF 0x00
+#define CCER2_CH3_ON 0x01 // 通道开关
+#define CCER2_CH3_OFF 0x00
+#define CCER2_CH4_ON 0x10 // 通道开关
+#define CCER2_CH4_OFF 0x00
+
+// ch1=F ch2=H ch3=L
+// ch1=L ch2=H ch3=F
+// ch1=L ch2=F ch3=H
+// ch1=F ch2=L ch3=H
+// ch1=H ch2=L ch3=F
+// ch1=H ch2=F ch3=L
+const CC_REG_STATE cc_steps_ccw[6] = {
     {
         .CCMR1 = CCMR_OFF,
         .CCMR2 = CCMR_PWM,
@@ -94,7 +99,6 @@ const CC_REG_STATE channel_steps_ccw[6] = {
         .CCER1 = CCER1_CH1_OFF | CCER1_CH2_ON,
         .CCER2 = CCER2_CH3_ON,
     },
-    // ch1=L ch2=H ch3=F
     {
         .CCMR1 = CCMR_LOW,
         .CCMR2 = CCMR_PWM,
@@ -102,7 +106,6 @@ const CC_REG_STATE channel_steps_ccw[6] = {
         .CCER1 = CCER1_CH1_ON | CCER1_CH2_ON,
         .CCER2 = CCER2_CH3_OFF,
     },
-    // ch1=L ch2=F ch3=H
     {
         .CCMR1 = CCMR_LOW,
         .CCMR2 = CCMR_OFF,
@@ -110,7 +113,6 @@ const CC_REG_STATE channel_steps_ccw[6] = {
         .CCER1 = CCER1_CH1_ON | CCER1_CH2_OFF,
         .CCER2 = CCER2_CH3_ON,
     },
-    // ch1=F ch2=L ch3=H
     {
         .CCMR1 = CCMR_OFF,
         .CCMR2 = CCMR_LOW,
@@ -118,7 +120,6 @@ const CC_REG_STATE channel_steps_ccw[6] = {
         .CCER1 = CCER1_CH1_OFF | CCER1_CH2_ON,
         .CCER2 = CCER2_CH3_ON,
     },
-    // ch1=H ch2=L ch3=F
     {
         .CCMR1 = CCMR_PWM,
         .CCMR2 = CCMR_LOW,
@@ -126,7 +127,6 @@ const CC_REG_STATE channel_steps_ccw[6] = {
         .CCER1 = CCER1_CH1_ON | CCER1_CH2_ON,
         .CCER2 = CCER2_CH3_OFF,
     },
-    // ch1=H ch2=F ch3=L
     {
         .CCMR1 = CCMR_PWM,
         .CCMR2 = CCMR_OFF,
@@ -136,15 +136,60 @@ const CC_REG_STATE channel_steps_ccw[6] = {
     },
 };
 
+typedef struct
+{
+    uint8_t ODR;
+} IO_REG_STATE;
+
+#define PORT GPIOA
+#define GPIO_CH1_L GPIO_PIN_1
+#define GPIO_CH2_L GPIO_PIN_2
+#define GPIO_CH3_L GPIO_PIN_3
+// ODR 寄存器控制 高/低电平（输出模式）
+#define ODR_CH1_HI GPIO_CH1_L
+#define ODR_CH1_LO ((uint8_t)0x00)
+#define ODR_CH2_HI GPIO_CH2_L
+#define ODR_CH2_LO ((uint8_t)0x00)
+#define ODR_CH3_HI GPIO_CH3_L
+#define ODR_CH3_LO ((uint8_t)0x00)
+
+const IO_REG_STATE io_steps_ccw[6] = {
+    // ch1=F ch2=H ch3=L
+    {
+        .ODR = ODR_CH1_LO | ODR_CH2_LO | ODR_CH3_HI,
+    },
+    // ch1=L ch2=H ch3=F
+    {
+        .ODR = ODR_CH1_HI | ODR_CH2_LO | ODR_CH3_LO,
+    },
+    // ch1=L ch2=F ch3=H
+    {
+        .ODR = ODR_CH1_HI | ODR_CH2_LO | ODR_CH3_LO,
+    },
+    // ch1=F ch2=L ch3=H
+    {
+        .ODR = ODR_CH1_LO | ODR_CH2_HI | ODR_CH3_LO,
+    },
+    // ch1=H ch2=L ch3=F
+    {
+        .ODR = ODR_CH1_LO | ODR_CH2_HI | ODR_CH3_LO,
+    },
+    // ch1=H ch2=F ch3=L
+    {
+        .ODR = ODR_CH1_LO | ODR_CH2_LO | ODR_CH3_HI,
+    },
+};
 void dev_pwm_set_step(uint8_t step)
 {
+    CC_REG_STATE cc_state = cc_steps_ccw[step];
+    IO_REG_STATE io_state = io_steps_ccw[step];
     disableInterrupts();
-    CC_REG_STATE state = channel_steps_ccw[step];
-    TIM1->CCER1 = state.CCER1;
-    TIM1->CCER2 = state.CCER2;
-    TIM1->CCMR1 = state.CCMR1;
-    TIM1->CCMR2 = state.CCMR2;
-    TIM1->CCMR3 = state.CCMR3;
+    TIM1->CCER1 = cc_state.CCER1;
+    TIM1->CCER2 = cc_state.CCER2;
+    TIM1->CCMR1 = cc_state.CCMR1;
+    TIM1->CCMR2 = cc_state.CCMR2;
+    TIM1->CCMR3 = cc_state.CCMR3;
+    PORT->ODR = io_state.ODR;
     enableInterrupts();
 }
 /**
